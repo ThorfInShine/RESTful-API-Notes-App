@@ -83,6 +83,14 @@ Aplikasi ini menggunakan Web Components untuk membuat UI yang modular dan dapat 
 
 # Responsive Design
 Aplikasi ini didesain untuk bekerja dengan baik di berbagai ukuran layar, dari desktop hingga mobile. Media queries digunakan untuk menyesuaikan tata letak berdasarkan ukuran viewport.
+<p align="center">
+  <img src="./screenshots/1.png" width="19%" alt="Fitur 1">
+  <img src="./screenshots/2.png" width="19%" alt="Fitur 2">
+  <img src="./screenshots/3.png" width="19%" alt="Fitur 3">
+  <img src="./screenshots/4.png" width="19%" alt="Fitur 4">
+  <img src="./screenshots/5.png" width="19%" alt="Fitur 5">
+  <img src="./screenshots/6.png" width="19%" alt="Fitur 5">
+</p>
 
 # Optimasi dan Best Practices
 - Menggunakan Shadow DOM untuk enkapsulasi gaya
