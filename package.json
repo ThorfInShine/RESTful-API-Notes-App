@@ -1,0 +1,27 @@
+{
+  "name": "notes-app",
+  "version": "1.0.0",
+  "description": "Notes Application",
+  "main": "js/app.js",
+  "scripts": {
+    "start-dev": "webpack serve --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js",
+    "format": "prettier --write \"**/*.{js,html,css,json}\""
+  },
+  "dependencies": {
+    "sweetalert2": "^11.7.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.20.12",
+    "@babel/preset-env": "^7.20.2",
+    "babel-loader": "^9.1.2",
+    "css-loader": "^6.7.3",
+    "html-webpack-plugin": "^5.5.0",
+    "prettier": "2.8.8",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
+    "webpack-dev-server": "^4.11.1",
+    "webpack-merge": "^5.8.0"
+  }
+}
