@@ -93,6 +93,20 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+
+           # Make package public automatically
+      - name: Make package public
+        run: |
+          echo "Making package public..."
+          package_name=$(echo "${{ env.IMAGE_NAME }}" | tr '[:upper:]' '[:lower:]')
+          
+          # Try to make package public using GitHub API
+          curl -X PATCH \
+            -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/user/packages/container/${package_name##*/}/versions" \
+            -d '{"visibility":"public"}' || echo "Package visibility update failed, may need manual configuration"
+
       
       - name: Image build summary
         run: |
