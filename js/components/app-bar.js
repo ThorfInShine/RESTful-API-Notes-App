@@ -41,7 +41,7 @@ class AppBar extends HTMLElement {
           padding-left: 20px;
         }
       </style>
-      <h1>${this.getAttribute("title") || "Notes Appss"}</h1>
+      <h1>${this.getAttribute("title") || "Notes App"}</h1>
     `;
   }
 }
