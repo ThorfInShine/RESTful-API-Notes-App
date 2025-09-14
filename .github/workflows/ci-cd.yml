@@ -57,10 +57,6 @@ jobs:
       contents: read
       packages: write
     
-    outputs:
-      image-digest: ${{ steps.build.outputs.digest }}
-      image-tags: ${{ steps.meta.outputs.tags }}
-    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -97,6 +93,21 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           platforms: linux/amd64,linux/arm64
+      
+      - name: Image build summary
+        run: |
+          echo "## 🐳 Docker Image Built Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "**Image Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.meta.outputs.tags }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** ${{ env.REGISTRY }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Repository:** ${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 How to use this image locally:" >> $GITHUB_STEP_SUMMARY
+          echo '```bash' >> $GITHUB_STEP_SUMMARY
+          echo "# Pull and run the latest image" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo "docker run -d --name notes-app -p 8080:80 ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
   # Deploy ke GitHub Pages
   deploy-pages:
@@ -143,29 +154,12 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
-  # Trigger Local Update (Fixed JSON payload)
-  trigger-local-update:
-    name: Trigger Local Docker Update
-    needs: [docker-build-push, deploy-pages]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    
-    steps:
-      - name: Repository Dispatch
-        uses: peter-evans/repository-dispatch@v3
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          event-type: docker-update
-          client-payload: |
-            {
-              "ref": "${{ github.ref }}",
-              "sha": "${{ github.sha }}",
-              "repository": "${{ github.repository }}",
-              "timestamp": "${{ github.event.head_commit.timestamp }}",
-              "message": "Docker image updated",
-              "actor": "${{ github.actor }}"
-            }
+      
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 GitHub Pages Deployed Successfully" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Time:** $(date)" >> $GITHUB_STEP_SUMMARY
 
   # Code Quality Check
   code-quality:
@@ -192,9 +186,17 @@ jobs:
       - name: Analyze bundle size
         run: |
           npm run build
-          echo "📦 Bundle Size Report:"
+          echo "## 📦 Bundle Size Report" >> $GITHUB_STEP_SUMMARY
           if [ -d "dist" ]; then
-            du -sh dist/* || echo "No dist files found"
+            echo "```" >> $GITHUB_STEP_SUMMARY
+            du -sh dist/* >> $GITHUB_STEP_SUMMARY || echo "No dist files found" >> $GITHUB_STEP_SUMMARY
+            echo "```" >> $GITHUB_STEP_SUMMARY
           else
-            echo "Dist directory not found"
+            echo "Dist directory not found" >> $GITHUB_STEP_SUMMARY
           fi
+      
+      - name: Quality summary
+        run: |
+          echo "## ✅ Code Quality Check Complete" >> $GITHUB_STEP_SUMMARY
+          echo "- Security audit: Completed" >> $GITHUB_STEP_SUMMARY
+          echo "- Bundle analysis: Completed" >> $GITHUB_STEP_SUMMARY
