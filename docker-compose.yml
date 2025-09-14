@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Main application service
+  # Main application service - gunakan build lokal dulu
   notes-app:
     build:
       context: .
@@ -14,37 +14,31 @@ services:
       - notes-network
     environment:
       - NODE_ENV=production
-    volumes:
-      - ./nginx-logs:/var/log/nginx
     labels:
       - "com.example.description=Notes App Web Server"
       - "com.example.version=1.0.0"
+      - "com.centurylinklabs.watchtower.enable=true"
 
-  # Development service dengan hot reload
-  notes-app-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    container_name: notes-app-dev
-    ports:
-      - "3000:3000"
+  # Watchtower untuk auto-update
+  watchtower:
+    image: containrrr/watchtower:latest
+    container_name: watchtower
+    restart: unless-stopped
     volumes:
-      - ./src:/app/src
-      - ./public:/app/public
-      - ./package.json:/app/package.json
-      - ./webpack.config.js:/app/webpack.config.js
+      - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - NODE_ENV=development
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300  # Check every 5 minutes
+      - WATCHTOWER_INCLUDE_STOPPED=true
+      - WATCHTOWER_REVIVE_STOPPED=true
+      - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_DEBUG=true
     networks:
       - notes-network
     profiles:
-      - dev
+      - auto-update
 
 networks:
   notes-network:
     driver: bridge
     name: notes-network
-
-volumes:
-  nginx-logs:
-    driver: local

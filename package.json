@@ -6,7 +6,19 @@
   "scripts": {
     "start-dev": "webpack serve --config webpack.dev.js",
     "build": "webpack --config webpack.prod.js",
-    "format": "prettier --write \"**/*.{js,html,css,json}\""
+    "format": "prettier --write \"**/*.{js,html,css,json}\"",
+    "dev": "npm run start-dev",
+    "start": "npm run start-dev",
+    "docker:build": "docker build -t notes-app .",
+    "docker:run": "docker run -p 8080:80 notes-app",
+    "docker:update": "node scripts/update-docker.js",
+    "docker:update:compose": "docker-compose pull notes-app && docker-compose up -d notes-app",
+    "docker:auto": "docker-compose --profile auto-update up -d",
+    "docker:stop": "docker stop notes-app || echo Container not running",
+    "docker:logs": "docker logs notes-app -f",
+    "docker:clean": "docker image prune -f",
+    "docker:restart": "npm run docker:stop && timeout /t 2 && npm run docker:update",
+    "docker:status": "docker ps --filter name=notes-app"
   },
   "dependencies": {
     "sweetalert2": "^11.7.0"
