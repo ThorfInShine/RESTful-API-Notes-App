@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build application
+        run: npm run build
+      
+      # Create zip file of dist folder
+      - name: Create release archive
+        run: |
+          zip -r notes-app-${{ github.ref_name }}.zip dist/
+      
+      # Create GitHub Release
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            ## 🎉 Release ${{ github.ref_name }}
+            
+            ### Changes in this release:
+            - Check commit history for detailed changes
+            
+            ### Installation:
+            1. Download the zip file
+            2. Extract to your web server
+            3. Open index.html in your browser
+          draft: false
+          prerelease: false
+      
+      # Upload release assets
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./notes-app-${{ github.ref_name }}.zip
+          asset_name: notes-app-${{ github.ref_name }}.zip
+          asset_content_type: application/zip
