@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  # Main application service
+  notes-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notes-app
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    networks:
+      - notes-network
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./nginx-logs:/var/log/nginx
+    labels:
+      - "com.example.description=Notes App Web Server"
+      - "com.example.version=1.0.0"
+
+  # Development service dengan hot reload
+  notes-app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: notes-app-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./package.json:/app/package.json
+      - ./webpack.config.js:/app/webpack.config.js
+    environment:
+      - NODE_ENV=development
+    networks:
+      - notes-network
+    profiles:
+      - dev
+
+networks:
+  notes-network:
+    driver: bridge
+    name: notes-network
+
+volumes:
+  nginx-logs:
+    driver: local

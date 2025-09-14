@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # Traefik reverse proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-data/traefik.yml:/traefik.yml:ro
+      - ./traefik-data/acme.json:/acme.json
+      - ./traefik-data/dynamic.yml:/dynamic.yml:ro
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.yourdomain.com`)"
+
+  # Notes App
+  notes-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: notes-app-prod
+    restart: unless-stopped
+    networks:
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.notes-app.entrypoints=http"
+      - "traefik.http.routers.notes-app.rule=Host(`notes.yourdomain.com`)"
+      - "traefik.http.middlewares.notes-app-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.notes-app.middlewares=notes-app-https-redirect"
+      - "traefik.http.routers.notes-app-secure.entrypoints=https"
+      - "traefik.http.routers.notes-app-secure.rule=Host(`notes.yourdomain.com`)"
+      - "traefik.http.routers.notes-app-secure.tls=true"
+      - "traefik.http.routers.notes-app-secure.tls.certresolver=http"
+      - "traefik.http.routers.notes-app-secure.service=notes-app"
+      - "traefik.http.services.notes-app.loadbalancer.server.port=80"
+
+networks:
+  proxy:
+    external: true
