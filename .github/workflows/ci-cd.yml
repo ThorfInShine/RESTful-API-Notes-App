@@ -144,7 +144,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-  # Trigger Local Update (Optional - via Repository Dispatch)
+  # Trigger Local Update (Fixed JSON payload)
   trigger-local-update:
     name: Trigger Local Docker Update
     needs: [docker-build-push, deploy-pages]
@@ -157,7 +157,15 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           event-type: docker-update
-          client-payload: '{"image": "${{ needs.docker-build-push.outputs.image-tags }}", "digest": "${{ needs.docker-build-push.outputs.image-digest }}"}'
+          client-payload: |
+            {
+              "ref": "${{ github.ref }}",
+              "sha": "${{ github.sha }}",
+              "repository": "${{ github.repository }}",
+              "timestamp": "${{ github.event.head_commit.timestamp }}",
+              "message": "Docker image updated",
+              "actor": "${{ github.actor }}"
+            }
 
   # Code Quality Check
   code-quality:
