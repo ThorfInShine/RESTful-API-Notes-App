@@ -18,10 +18,13 @@ services:
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - /home/user/.docker/config.json:/config.json:ro  # Share Docker credentials
     environment:
       - WATCHTOWER_CLEANUP=true
       - WATCHTOWER_POLL_INTERVAL=300
       - WATCHTOWER_LABEL_ENABLE=true
+      - WATCHTOWER_DEBUG=true
+      - WATCHTOWER_INCLUDE_RESTARTING=true
     networks:
       - notes-network
     profiles:
