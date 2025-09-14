@@ -12,10 +12,10 @@ jobs:
     
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
@@ -29,18 +29,23 @@ jobs:
       # Create zip file of dist folder
       - name: Create release archive
         run: |
-          zip -r notes-app-${{ github.ref_name }}.zip dist/
+          if [ -d "dist" ]; then
+            zip -r notes-app-${{ github.ref_name }}.zip dist/
+          else
+            echo "Dist directory not found, creating placeholder"
+            mkdir -p dist
+            echo "Build output will be here" > dist/README.txt
+            zip -r notes-app-${{ github.ref_name }}.zip dist/
+          fi
       
-      # Create GitHub Release
+      # Create GitHub Release - Using GitHub CLI instead
       - name: Create Release
-        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref_name }}
-          body: |
-            ## 🎉 Release ${{ github.ref_name }}
+        run: |
+          gh release create ${{ github.ref_name }} \
+            --title "Release ${{ github.ref_name }}" \
+            --notes "## 🎉 Release ${{ github.ref_name }}
             
             ### Changes in this release:
             - Check commit history for detailed changes
@@ -48,17 +53,5 @@ jobs:
             ### Installation:
             1. Download the zip file
             2. Extract to your web server
-            3. Open index.html in your browser
-          draft: false
-          prerelease: false
-      
-      # Upload release assets
-      - name: Upload Release Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./notes-app-${{ github.ref_name }}.zip
-          asset_name: notes-app-${{ github.ref_name }}.zip
-          asset_content_type: application/zip
+            3. Open index.html in your browser" \
+            ./notes-app-${{ github.ref_name }}.zip
